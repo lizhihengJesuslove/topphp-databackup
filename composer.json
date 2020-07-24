@@ -1,0 +1,18 @@
+{
+    "name": "topphpdatabackup/tophpdatabackup",
+    "description": "topphp",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "lizhiheng",
+            "email": "lizhiheng@kaituocn.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Databackup\\": "src/Databackup/"
+        }
+    }
+
+}
