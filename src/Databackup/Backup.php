@@ -217,7 +217,7 @@ class Backup
     }
     /**
      * 下载备份
-     * @Author: 浪哥 <939881475@qq.com>
+     * @Author: lzh <jesus84@163.com>
      * @param string $time
      * @param integer $part
      * @return array|mixed|string
