@@ -217,7 +217,6 @@ class Backup
     }
     /**
      * 下载备份
-     * @Author: lzh <jesus84@163.com>
      * @param string $time
      * @param integer $part
      * @return array|mixed|string
@@ -239,6 +238,7 @@ class Backup
             throw new \Exception("{$time} File is abnormal");
         }
     }
+
     public function import($start)
     {
         //还原数据
@@ -278,9 +278,9 @@ class Backup
         $sql = "-- -----------------------------\n";
         $sql .= "-- Think MySQL Data Transfer \n";
         $sql .= "-- \n";
-        $sql .= "-- Host     : " . $this->dbconfig['hostname'] . "\n";
-        $sql .= "-- Port     : " . $this->dbconfig['hostport'] . "\n";
-        $sql .= "-- Database : " . $this->dbconfig['database'] . "\n";
+        $sql .= "-- Host     : " . $this->dbconfig['connections']['mysql']['hostname'] . "\n";
+        $sql .= "-- Port     : " . $this->dbconfig['connections']['mysql']['hostport'] . "\n";
+        $sql .= "-- Database : " . $this->dbconfig['connections']['mysql']['database'] . "\n";
         $sql .= "-- \n";
         $sql .= "-- Part : #{$this->file['part']}\n";
         $sql .= "-- Date : " . date("Y-m-d H:i:s") . "\n";
@@ -294,49 +294,48 @@ class Backup
      * @param  integer $start 起始行数
      * @return boolean        false - 备份失败
      */
-    public function backup($table, $start)
+    public function backup($tables, $start)
     {
         $db = self::connect();
-        // 备份表结构
-        if (0 == $start) {
-            $result = $db->query("SHOW CREATE TABLE `{$table}`");
-            $sql = "\n";
-            $sql .= "-- -----------------------------\n";
-            $sql .= "-- Table structure for `{$table}`\n";
-            $sql .= "-- -----------------------------\n";
-            $sql .= "DROP TABLE IF EXISTS `{$table}`;\n";
-            $sql .= trim($result[0]['Create Table']) . ";\n\n";
-            if (false === $this->write($sql)) {
-                return false;
-            }
-        }
-        //数据总数
-        $result = $db->query("SELECT COUNT(*) AS count FROM `{$table}`");
-        $count = $result['0']['count'];
-        //备份表数据
-        if ($count) {
-            //写入数据注释
+        foreach($tables as $k=>$table){
+            // 备份表结构
             if (0 == $start) {
-                $sql = "-- -----------------------------\n";
-                $sql .= "-- Records of `{$table}`\n";
+                $result = $db->query("SHOW CREATE TABLE `{$table}`");
+                $sql = "\n";
                 $sql .= "-- -----------------------------\n";
-                $this->write($sql);
-            }
-            //备份数据记录
-            $result = $db->query("SELECT * FROM `{$table}` LIMIT {$start}, 1000");
-            foreach ($result as $row) {
-                $row = array_map('addslashes', $row);
-                $sql = "INSERT INTO `{$table}` VALUES ('" . str_replace(array("\r", "\n"), array('\\r', '\\n'), implode("', '", $row)) . "');\n";
+                $sql .= "-- Table structure for `{$table}`\n";
+                $sql .= "-- -----------------------------\n";
+                $sql .= "DROP TABLE IF EXISTS `{$table}`;\n";
+                $sql .= trim($result[0]['Create Table']) . ";\n\n";
                 if (false === $this->write($sql)) {
                     return false;
                 }
             }
-            //还有更多数据
-            if ($count > $start + 1000) {
-                //return array($start + 1000, $count);
-                return $this->backup($table, $start + 1000);
+            //数据总数
+            $result = $db->query("SELECT COUNT(*) AS count FROM `{$table}`");
+            $count = $result['0']['count'];
+            //备份表数据
+            if ($count) {
+                //写入数据注释
+                if (0 == $start) {
+                    $sql = "-- -----------------------------\n";
+                    $sql .= "-- Records of `{$table}`\n";
+                    $sql .= "-- -----------------------------\n";
+                    $this->write($sql);
+                }
+                //备份数据记录
+                $result = $db->query("SELECT * FROM `{$table}`");
+                foreach ($result as $row) {
+                    $row = array_map('addslashes', $row);
+                    $sql = "INSERT INTO `{$table}` VALUES ('" . str_replace(array("\r", "\n"), array('\\r', '\\n'), implode("', '", $row)) . "');\n";
+                    if (false === $this->write($sql)) {
+                        return false;
+                    }
+                }
+
             }
         }
+
         //备份下一表
         return 0;
     }
