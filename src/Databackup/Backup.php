@@ -234,6 +234,7 @@ class Backup
             header('Content-Length: ' . filesize($fileName));
             header('Content-Disposition: attachment; filename=' . basename($fileName));
             readfile($fileName);
+            exit;
         } else {
             throw new \Exception("{$time} File is abnormal");
         }
