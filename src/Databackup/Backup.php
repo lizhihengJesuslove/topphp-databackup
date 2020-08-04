@@ -124,6 +124,13 @@ class Backup
         return array_map('array_change_key_case', $list);
         //$list;
     }
+    public function dataListTable()
+    {
+        $db = self::connect();
+        $tal = $db->query("SHOW TABLES");
+        return array_map('array_change_key_case', $tal);
+
+    }
     //数据库备份文件列表
     public function fileList()
     {
@@ -238,7 +245,6 @@ class Backup
             throw new \Exception("{$time} File is abnormal");
         }
     }
-
     public function import($start)
     {
         //还原数据
@@ -278,9 +284,9 @@ class Backup
         $sql = "-- -----------------------------\n";
         $sql .= "-- Think MySQL Data Transfer \n";
         $sql .= "-- \n";
-        $sql .= "-- Host     : " . $this->dbconfig['connections']['mysql']['hostname'] . "\n";
-        $sql .= "-- Port     : " . $this->dbconfig['connections']['mysql']['hostport'] . "\n";
-        $sql .= "-- Database : " . $this->dbconfig['connections']['mysql']['database'] . "\n";
+        $sql .= "-- Host     : " . $this->dbconfig['hostname'] . "\n";
+        $sql .= "-- Port     : " . $this->dbconfig['hostport'] . "\n";
+        $sql .= "-- Database : " . $this->dbconfig['database'] . "\n";
         $sql .= "-- \n";
         $sql .= "-- Part : #{$this->file['part']}\n";
         $sql .= "-- Date : " . date("Y-m-d H:i:s") . "\n";
